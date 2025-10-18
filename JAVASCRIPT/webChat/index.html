@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App - Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="auth-card">
+            <h1>Welcome to ChatApp</h1>
+            
+            <!-- Tab Navigation for Login/Register -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showLogin()">Login</button>
+                <button class="tab-btn" onclick="showRegister()">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="auth-form">
+                <h2>Login to Your Account</h2>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn-primary">Login</button>
+                <p class="error-msg" id="loginError"></p>
+            </form>
+
+            <!-- Register Form (Hidden by default) -->
+            <form id="registerForm" class="auth-form" style="display: none;">
+                <h2>Create New Account</h2>
+                <div class="form-group">
+                    <label for="registerUsername">Username</label>
+                    <input type="text" id="registerUsername" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" placeholder="Create a password (min 6 characters)" required minlength="6">
+                </div>
+                <button type="submit" class="btn-primary">Register</button>
+                <p class="error-msg" id="registerError"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase SDK v10 - Modular approach -->
+    <script type="module">
+        // Import Firebase modules from CDN
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+        // Firebase configuration - Replace with your own config
+        // Get this from Firebase Console > Project Settings > Your apps > SDK setup
+  const firebaseConfig = {
+    apiKey: "AIzaSyCY_jUTu4__0Uo8TVyXJu3C_JcDx0QLm7U",
+    authDomain: "web-chat-app-972fe.firebaseapp.com",
+    projectId: "web-chat-app-972fe",
+    storageBucket: "web-chat-app-972fe.firebasestorage.app",
+    messagingSenderId: "926173947313",
+    appId: "1:926173947313:web:b3ab61d6fd8d9d6e5a0990"
+  };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Function to switch to login tab
+        window.showLogin = function() {
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('registerForm').style.display = 'none';
+            document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            document.querySelectorAll('.tab-btn')[1].classList.remove('active');
+        }
+
+        // Function to switch to register tab
+        window.showRegister = function() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            document.querySelectorAll('.tab-btn')[0].classList.remove('active');
+        }
+
+        // Handle user registration - FIXED VERSION
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent form from refreshing page
+    
+    // Get form values
+    const username = document.getElementById('registerUsername').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const errorMsg = document.getElementById('registerError');
+
+    try {
+        // Create user with email and password using Firebase Auth
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Update user profile with username
+        await updateProfile(userCredential.user, {
+            displayName: username
+        });
+
+        // IMPORTANT: Wait for the profile to update, then refresh the user
+        await userCredential.user.reload();
+        
+        // Store username in localStorage for easy access
+        localStorage.setItem('chatAppUsername', username);
+        localStorage.setItem('chatAppUserId', userCredential.user.uid);
+        localStorage.setItem('chatAppEmail', email);
+
+        // Redirect to chat library page
+        window.location.href = 'chat-library.html';
+
+    } catch (error) {
+        // Display error message to user
+        errorMsg.textContent = error.message;
+        console.error('Registration error:', error);
+    }
+});
+
+// Handle user login - FIXED VERSION
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Prevent form from refreshing page
+    
+    // Get form values
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errorMsg = document.getElementById('loginError');
+
+    try {
+        // Sign in user with email and password
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Get username from Firebase or use email as fallback
+        const username = userCredential.user.displayName || email.split('@')[0] || 'User';
+        
+        // Store user data in localStorage
+        localStorage.setItem('chatAppUsername', username);
+        localStorage.setItem('chatAppUserId', userCredential.user.uid);
+        localStorage.setItem('chatAppEmail', email);
+
+        // Redirect to chat library page
+        window.location.href = 'chat-library.html';
+
+    } catch (error) {
+        // Display error message to user
+        errorMsg.textContent = error.message;
+        console.error('Login error:', error);
+    }
+});
+
+
+        // Check if user is already logged in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in, redirect to chat library
+                window.location.href = 'chat-library.html';
+            }
+        });
+    </script>
+</body>
+</html>
