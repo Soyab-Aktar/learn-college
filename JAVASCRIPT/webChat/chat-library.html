@@ -47,14 +47,14 @@
         import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase configuration (same as login page)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCY_jUTu4__0Uo8TVyXJu3C_JcDx0QLm7U",
-    authDomain: "web-chat-app-972fe.firebaseapp.com",
-    projectId: "web-chat-app-972fe",
-    storageBucket: "web-chat-app-972fe.firebasestorage.app",
-    messagingSenderId: "926173947313",
-    appId: "1:926173947313:web:b3ab61d6fd8d9d6e5a0990"
-  };
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
