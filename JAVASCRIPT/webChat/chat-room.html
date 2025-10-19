@@ -4,23 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Room</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- Link CSS files -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
     <div class="container">
         <div class="chat-container">
-            <!-- Chat header with group name and back button -->
             <div class="chat-header">
                 <button onclick="goBack()" class="btn-back">← Back</button>
                 <h1 id="groupName">Chat Room</h1>
             </div>
 
-            <!-- Messages display area -->
             <div id="messagesContainer" class="messages-container">
                 <p class="loading">Loading messages...</p>
             </div>
 
-            <!-- Message input form -->
             <div class="message-input-container">
                 <form id="messageForm">
                     <input type="text" id="messageInput" placeholder="Type your message..." required autocomplete="off">
@@ -30,166 +29,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK v10 -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Get group ID and name from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const groupId = urlParams.get('groupId');
-        const groupName = urlParams.get('groupName');
-
-        // Display group name in header
-        if (groupName) {
-            document.getElementById('groupName').textContent = decodeURIComponent(groupName);
-        }
-
-        // Go back to chat library
-        window.goBack = function() {
-            window.location.href = 'chat-library.html';
-        }
-
-        // Check authentication
-// Check authentication - FIXED VERSION
-onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = 'index.html';
-    } else {
-        // Get username with fallback options
-        let username = localStorage.getItem('chatAppUsername');
-        
-        // If not in localStorage, try Firebase user
-        if (!username || username === 'null' || username === 'Anonymous') {
-            username = user.displayName;
-        }
-        
-        // If still no username, use email prefix
-        if (!username || username === 'null') {
-            username = user.email ? user.email.split('@')[0] : 'User';
-        }
-        
-        // Update localStorage
-        localStorage.setItem('chatAppUsername', username);
-        localStorage.setItem('chatAppUserId', user.uid);
-        
-        // Load messages for this group
-        loadMessages();
-    }
-});
-
-
-        // Send a new message
-        document.getElementById('messageForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const messageInput = document.getElementById('messageInput');
-            const messageText = messageInput.value.trim();
-            
-            if (!messageText) return; // Don't send empty messages
-
-            const username = localStorage.getItem('chatAppUsername');
-            const userId = localStorage.getItem('chatAppUserId');
-
-            try {
-                // Add message to Firestore in the group's messages subcollection
-                await addDoc(collection(db, 'groups', groupId, 'messages'), {
-                    text: messageText,
-                    username: username,
-                    userId: userId,
-                    timestamp: serverTimestamp() // Server timestamp for consistency
-                });
-
-                // Clear input field
-                messageInput.value = '';
-                
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-            }
-        });
-
-        // Load and listen to messages in real-time
-        function loadMessages() {
-            const messagesContainer = document.getElementById('messagesContainer');
-            
-            // Create query to get messages ordered by timestamp
-            const q = query(
-                collection(db, 'groups', groupId, 'messages'), 
-                orderBy('timestamp', 'asc')
-            );
-
-            // Listen to real-time updates
-            onSnapshot(q, (snapshot) => {
-                messagesContainer.innerHTML = ''; // Clear loading message
-
-                if (snapshot.empty) {
-                    messagesContainer.innerHTML = '<p class="no-messages">No messages yet. Start the conversation!</p>';
-                    return;
-                }
-
-                // Get current user ID to differentiate own messages
-                const currentUserId = localStorage.getItem('chatAppUserId');
-
-                // Loop through each message
-                snapshot.forEach((doc) => {
-                    const message = doc.data();
-                    
-                    // Create message element
-                    const messageDiv = document.createElement('div');
-                    
-                    // Add different class for own messages vs others
-                    if (message.userId === currentUserId) {
-                        messageDiv.className = 'message message-own';
-                    } else {
-                        messageDiv.className = 'message message-other';
-                    }
-
-                    // Format timestamp if available
-                    let timeString = '';
-                    if (message.timestamp) {
-                        const date = message.timestamp.toDate();
-                        timeString = date.toLocaleTimeString('en-US', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                        });
-                    }
-
-                    // Build message HTML
-                    messageDiv.innerHTML = `
-                        <div class="message-header">
-                            <strong>${message.username}</strong>
-                            ${timeString ? `<span class="message-time">${timeString}</span>` : ''}
-                        </div>
-                        <div class="message-text">${message.text}</div>
-                    `;
-
-                    messagesContainer.appendChild(messageDiv);
-                });
-
-                // Auto-scroll to bottom to show latest messages
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-                
-            }, (error) => {
-                console.error('Error loading messages:', error);
-                messagesContainer.innerHTML = '<p class="error-msg">Failed to load messages.</p>';
-            });
-        }
-    </script>
+    <!-- Link JavaScript file -->
+    <script type="module" src="js/chat.js"></script>
 </body>
 </html>

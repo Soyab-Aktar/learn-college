@@ -1,0 +1,9 @@
+# Firebase configuration (contains sensitive data)
+js/firebase-config.js
+
+# Node modules (if using any)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
