@@ -1,7 +1,7 @@
 // Import Firebase modules
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, onSnapshot, orderBy, serverTimestamp, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 import { firebaseConfig } from './firebase-config.js';
 
 // Initialize Firebase
@@ -14,6 +14,12 @@ const urlParams = new URLSearchParams(window.location.search);
 const groupId = urlParams.get('groupId');
 const groupName = urlParams.get('groupName');
 
+// Validate parameters
+if (!groupId || !groupName) {
+    alert('Invalid group. Redirecting...');
+    window.location.href = 'chat-library.html';
+}
+
 // Display group name in header
 if (groupName) {
     document.getElementById('groupName').textContent = decodeURIComponent(groupName);
@@ -24,29 +30,50 @@ window.goBack = function() {
     window.location.href = 'chat-library.html';
 }
 
+// Get username from Firestore
+async function getUsernameFromFirestore(uid) {
+    try {
+        const userDoc = await getDoc(doc(db, 'users', uid));
+        if (userDoc.exists()) {
+            return userDoc.data().username;
+        }
+    } catch (error) {
+        console.error('Error fetching username:', error);
+    }
+    return null;
+}
+
 // Check authentication
-onAuthStateChanged(auth, (user) => {
+onAuthStateChanged(auth, async (user) => {
     if (!user) {
         window.location.href = 'index.html';
-    } else {
-        // Get username with fallback options
-        let username = localStorage.getItem('chatAppUsername');
-        
-        if (!username || username === 'null' || username === 'Anonymous') {
-            username = user.displayName;
-        }
-        
-        if (!username || username === 'null') {
-            username = user.email ? user.email.split('@')[0] : 'User';
-        }
-        
-        // Update localStorage
-        localStorage.setItem('chatAppUsername', username);
-        localStorage.setItem('chatAppUserId', user.uid);
-        
-        loadMessages();
+        return;
     }
+    
+    // Get username with proper fallback chain
+    let username = localStorage.getItem('chatAppUsername');
+    
+    if (!username || username === 'null' || username === 'undefined') {
+        username = await getUsernameFromFirestore(user.uid);
+    }
+    
+    if (!username) {
+        username = user.displayName || user.email?.split('@')[0] || 'User';
+    }
+    
+    // Update localStorage
+    localStorage.setItem('chatAppUsername', username);
+    localStorage.setItem('chatAppUserId', user.uid);
+    
+    loadMessages();
 });
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // Send a new message
 document.getElementById('messageForm').addEventListener('submit', async (e) => {
@@ -59,6 +86,9 @@ document.getElementById('messageForm').addEventListener('submit', async (e) => {
 
     const username = localStorage.getItem('chatAppUsername');
     const userId = localStorage.getItem('chatAppUserId');
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+
+    submitBtn.disabled = true;
 
     try {
         await addDoc(collection(db, 'groups', groupId, 'messages'), {
@@ -73,6 +103,9 @@ document.getElementById('messageForm').addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error sending message:', error);
         alert('Failed to send message. Please try again.');
+    } finally {
+        submitBtn.disabled = false;
+        messageInput.focus();
     }
 });
 
@@ -115,19 +148,31 @@ function loadMessages() {
 
             messageDiv.innerHTML = `
                 <div class="message-header">
-                    <strong>${message.username}</strong>
+                    <strong>${escapeHtml(message.username)}</strong>
                     ${timeString ? `<span class="message-time">${timeString}</span>` : ''}
                 </div>
-                <div class="message-text">${message.text}</div>
+                <div class="message-text">${escapeHtml(message.text)}</div>
             `;
 
             messagesContainer.appendChild(messageDiv);
         });
 
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        // Scroll to bottom smoothly
+        messagesContainer.scrollTo({
+            top: messagesContainer.scrollHeight,
+            behavior: 'smooth'
+        });
         
     }, (error) => {
         console.error('Error loading messages:', error);
         messagesContainer.innerHTML = '<p class="error-msg">Failed to load messages.</p>';
     });
 }
+
+// Handle Enter key to send message
+document.getElementById('messageInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('messageForm').dispatchEvent(new Event('submit'));
+    }
+});
