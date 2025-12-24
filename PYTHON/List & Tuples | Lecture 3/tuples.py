@@ -1,0 +1,10 @@
+# tuple is immutabe
+num = (12, 44,21,76,33,99)
+num2 = ()
+num3 = (76,)
+data = ('Soyab', 'Aktar', 21, True, '22')
+# print(num)
+# print(type(num))
+# print(num[0])
+# print(data)
+# print(num[1 : 4])
