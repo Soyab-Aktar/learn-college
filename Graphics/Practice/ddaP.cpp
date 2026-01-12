@@ -38,7 +38,7 @@ void display()
 {
   glClear(GL_COLOR_BUFFER_BIT);
   glColor3f(1.0, 1.0, 1.0);
-  drawDDA(50, 50, 350, 350);
+  drawDDA(50, 50, 400, 400);
   glFlush();
 }
 
@@ -56,8 +56,7 @@ int main(int argc, char **argv)
   glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 
   glutInitWindowSize(500, 500);
-  glutInitWindowPosition(450, 450);
-  glutCreateWindow("Re - Vision DDA");
+  glutCreateWindow("Hello , DDA");
 
   init();
 
