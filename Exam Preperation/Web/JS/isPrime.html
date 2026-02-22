@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>isPrime</title>
+  <style>
+    .prime {
+      color: green;
+      font-weight: bold;
+    }
+
+    .not-prime {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <form onsubmit="handlePrime(event)">
+    <input type="number" id="numberValueID" placeholder="Enter your number">
+    <input type="submit">
+  </form>
+  <div id="cube">
+    <h1 id="result"></h1>
+  </div>
+  <script>
+    const handlePrime = (e) => {
+      e.preventDefault();
+      const inputValue = document.getElementById("numberValueID").value;
+      console.log(inputValue);
+      const result = document.getElementById("result");
+
+      if (inputValue <= 1) {
+        result.innerText = `${inputValue} is not a prime number`;
+        result.className = "not-prime";
+
+      }
+
+      let isPrime = true;
+
+      for (let i = 2; i <= Math.sqrt(inputValue); i++) {
+        if (inputValue % 2 === 0) {
+          isPrime = false;
+          break;
+        }
+      }
+
+      if (isPrime) {
+        result.innerText = `${inputValue} is a prime number`;
+        result.className = "prime";
+
+      } else {
+        result.innerText = `${inputValue} is not a prime number`;
+        result.className = "not-prime";
+
+
+      }
+    }
+  </script>
+</body>
+
+</html>

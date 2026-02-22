@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>formData</title>
+</head>
+
+<body>
+
+  <form onsubmit="handleform(event)">
+
+    <input type="text" id="name" placeholder="Enter your Name"><br><br>
+
+    <input type="email" id="email" placeholder="Enter your Email"><br><br>
+
+    <input type="tel" id="phone" placeholder="Enter your phone no"><br><br>
+
+    <input type="radio" name="gender" value="Male"> Male
+    <input type="radio" name="gender" value="Female"> Female
+    <br><br>
+
+    <input type="color" id="color"><br><br>
+
+    <input type="submit">
+
+  </form>
+
+  <textarea id="output" rows="10" cols="50"></textarea>
+
+  <script>
+
+    function handleform(e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const phone = document.getElementById("phone").value;
+      const color = document.getElementById("color").value;
+
+      const genderElement = document.querySelector('input[name="gender"]:checked');
+      const gender = genderElement ? genderElement.value : "";
+
+      // Simple validations
+      if (name === "") {
+        alert("Enter your name");
+        return;
+      }
+
+      if (!email.includes("@")) {
+        alert("Enter valid email");
+        return;
+      }
+
+      if (phone.length !== 10) {
+        alert("Phone must be 10 digits");
+        return;
+      }
+
+      if (gender === "") {
+        alert("Select gender");
+        return;
+      }
+
+      // Combine and display
+      const data = `
+        Name: ${name}
+        Email: ${email}
+        Phone: ${phone}
+        Gender: ${gender}
+        Color: ${color}
+      `;
+
+      document.getElementById("output").value = data;
+
+    }
+
+  </script>
+
+</body>
+
+</html>
