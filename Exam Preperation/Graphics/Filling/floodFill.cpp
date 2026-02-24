@@ -72,13 +72,13 @@ void mouse(int button, int state, int x, int y)
     y = wh - y; // Convert to OpenGL coordinate
 
     // Get original color where user clicked
-    getPixel(x, y, oldColor);
+    // getPixel(x, y, oldColor);
 
     // Prevent infinite recursion if already filled
-    if (!sameColor(oldColor, fillColor))
-    {
-      floodFill(x, y);
-    }
+    // if (!sameColor(oldColor, fillColor))
+    // {
+    floodFill(x, y);
+    // }
   }
 }
 
