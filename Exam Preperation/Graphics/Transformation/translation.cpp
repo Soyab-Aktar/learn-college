@@ -24,12 +24,12 @@ void multiply(float point[3], float result[3])
   }
 }
 
-void drawTriangle(float a[3], float b[3], float c[3])
+void drawTriangle(float p1[3], float p2[3], float p3[3])
 {
   glBegin(GL_LINE_LOOP);
-  glVertex2f(a[0], a[1]);
-  glVertex2f(b[0], b[1]);
-  glVertex2f(c[0], c[1]);
+  glVertex2f(p1[0], p1[1]);
+  glVertex2f(p2[0], p2[1]);
+  glVertex2f(p3[0], p3[1]);
   glEnd();
 }
 
