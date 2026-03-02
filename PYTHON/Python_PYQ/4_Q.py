@@ -1,20 +1,21 @@
+# Write a program to Remove all prime numbers from a list.
+
 myList = [1,2,3,4,5,6,7,8,9,10]
 
-result = []
+i = 0
+while i < len(myList):
+    number = myList[i]
 
-for number in myList:
-    if number <= 1:
-        result.append(number)
-        continue
+    if number > 1:
+        isPrime = True
+        for j in range(2, int(number ** 0.5) + 1):
+            if number % j == 0:
+                isPrime = False
+                break
 
-    isPrime = True
+        if isPrime:
+            myList.pop(i)
+            continue  # stay at same index
+    i += 1
 
-    for i in range(2, int(number ** 0.5) + 1):
-        if number % i == 0:
-            isPrime = False
-            break
-
-    if not isPrime:
-        result.append(number)
-
-print(result)
+print(myList)
